@@ -1,0 +1,138 @@
+c-----------------------------------------------------------------------
+c
+c     user subroutines required by nek5000
+c
+c-----------------------------------------------------------------------
+      subroutine uservp (ix,iy,iz,ieg)
+      include 'SIZE'
+      include 'NEKUSE'          ! UDIFF, UTRANS
+
+      UDIFF =0.
+      UTRANS=0.
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine userf  (ix,iy,iz,ieg)
+      include 'SIZE'
+      include 'NEKUSE'          ! FF[XYZ]
+      include 'SOLN'            ! V[XYZ]
+
+      FFX = 0.0
+      FFY = 0.0
+      FFZ = 0.0
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine userq  (ix,iy,iz,ieg)
+      include 'SIZE'
+      include 'NEKUSE'          ! QVOL
+
+      QVOL   = 0.0
+
+      return
+      end
+!***********************************************************************
+      subroutine userchk
+
+      include 'SIZE'
+      include 'TSTEP'   ! istep
+      include 'PARALLEL' ! np
+      include 'CTIMER'  ! tcrsl
+
+      real tcrsl_min, tcrsl_max, tcrsl_avg, w_min, 
+     $ w_max, w_avg
+
+c-----------------------------------------------------------------------
+!     tihis must be performed before calling sfd_init and sfd_rst_save
+      call checkpoint  ! save/load files for full-restart
+
+c     Print timing for the coarse grid solver 
+c     (min, max and avg over all processes)
+      tcrsl_min = tcrsl
+      call gop(tcrsl_min,w_min,'m  ',1)
+
+      tcrsl_max = tcrsl
+      call gop(tcrsl_max,w_max,'M  ',1)
+
+      tcrsl_avg = tcrsl
+      call gop(tcrsl_avg,w_avg,'+  ',1)
+      tcrsl_avg = tcrsl_avg/np
+
+      if (nid .eq. 0) then
+         write(6,*) istep, ' tcrsl_min: ', tcrsl_min
+         write(6,*) istep, ' tcrsl_max: ', tcrsl_max
+         write(6,*) istep, ' tcrsl_avg: ', tcrsl_avg
+      endif
+
+      return
+      end
+!***********************************************************************
+      subroutine userbc (ix,iy,iz,iside,ieg)
+
+      include 'SIZE'
+      include 'NEKUSE'          ! UX, UY, UZ, TEMP, X, Y
+
+!     argument list
+      integer ix,iy,iz,iside, ieg
+!-----------------------------------------------------------------------
+!     velocity
+      UX = 0.0
+      UY = 0.0
+      UZ = 0.0
+
+      return
+      end
+!***********************************************************************
+      subroutine useric (ix,iy,iz,ieg)
+
+      include 'SIZE'
+      include 'NEKUSE'          ! U[XYZ], X, Y, Z
+      
+!     argument list
+      integer ix,iy,iz,ieg
+!-----------------------------------------------------------------------
+      UX = 0.0
+      UY = 0.0
+
+      r2 = X*X + Y*Y
+      UZ = 2.0*(1 - r2) ! ubar = 1.
+
+      s = 2.5
+     
+      
+      call random_number(a)
+      a=a-0.5
+      UX=UX+s*a
+      
+      call random_number(a)
+      a=a-0.5
+      UY=UY+s*a
+      
+      call random_number(a)
+      a=a-0.5
+      UZ=UZ+s*a
+
+      return
+      end
+!***********************************************************************
+      subroutine usrdat
+      include 'SIZE'
+
+!     to read user module parameters
+      call uprm_read
+!      nelx = 384
+!      nely = 1
+!      nelz = 95
+      return
+      end
+!***********************************************************************
+      subroutine usrdat2
+      return
+      end
+!***********************************************************************
+      subroutine usrdat3
+      return
+      end
+!***********************************************************************
