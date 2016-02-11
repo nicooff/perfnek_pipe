@@ -2,7 +2,7 @@
 PIPE CASES FOR BENCHMARKING OF NEK
 ==================================
 Author of the README: Nicolas Offermans
-Last update: 2016-02-09
+Last update: 2016-02-11
 
 --------------------------------------------------------
 VERY IMPORTANT CHECK UP LIST BEFORE RUNNING A SIMULATION
@@ -15,6 +15,8 @@ VERY IMPORTANT CHECK UP LIST BEFORE RUNNING A SIMULATION
   * use correct compilers
   * /!\ comment line IFAMG="true" to use XXT as coarse grid solver
     /!\ uncomment line IFAMG="true" to use AMG as coarse grid solver
+    Data files for the AMG have already been created so unless you want new
+    ones, always comment the line IFAMG_DUMP="true"!
  
  - PNPN / PNPN-2: make sure that the whole setup is coherent with the method you
    want to use in the SIZE file :
@@ -40,16 +42,17 @@ VERY IMPORTANT CHECK UP LIST BEFORE RUNNING A SIMULATION
     + PNPN-2 :                  | + PNPN :
        F      IFSPLIT           |   T      IFSPLIT
 
- - Use correct restart files (restart files are different for PNPN and PNPN-2). 
-    Files for PNPN are in folder pnpn for each case.
-    Files for PNPN-2 are in folder pnpnm2 for each case.
-   Make sure that restart files are in the case folder (same folder as the 
+ - Make sure that restart files are in the case folder (same folder as the 
    executable 'nek5000').
 
  - Check if P065 and number of CPUs are set correctly (see below for details).
 
- - Check that pipe.upar and pipe.restart are correctly configured (see below 
+ - If using chkpoint function for restart (and files starting with rs8xxx), 
+   check that pipe.upar and pipe.restart are correctly configured (see below 
    for details).
+
+ - If using PRESOLVE/RESTART, check the corresponding line in pipe.rea file (as
+   well as pipe.upar and pipe.restart - see below for details).
 
 -----------
 Description
@@ -65,7 +68,14 @@ for the different test cases are :
 - ReTau360
 - ReTau550
 - ReTau1000
-and contain the SIZE, rea, re2, upar, restart, map and AMG files.
+
+Each case contains 6 additional folders:
+- amg_old with AMG setup files from original Matlab code.
+- amg_new with AMG setup files from new Matlab code.
+- pnpnm2 containing the SIZE, rea, re2, upar, restart and map files for PNPN-2.
+- pnpn containing the SIZE, rea, re2, upar, restart and map files for PNPN.
+- rs8_restart contaning restart files to use with chkpoint.f.
+- reg_start containing "regular" restart files to use with PRESOLVE/RESTART.
 
 ---------
 Compiling
@@ -87,31 +97,43 @@ folder. Description of the different files in each case folder:
     * When restarting from previous solution, parameter 65 (#iofiles) should be 
       modified. This must be equal to the number of ionodes used to write out 
       the restart files.
-      E.g. in the ReTau360 case restart files are given by
-      rs8pipe0.f0000x (x = 1 : 4)
-      ...
-      rs8pipe7.f0000x (x = 1 : 4)
+      E.g. in the ReTau360 case restart files are given by (x = 1 : 4) 
+       rs8pipe0.f0000x 
+       ...
+       rs8pipe7.f0000x
+   OR (depending on the restart method you choose)
+       pipe0.f0000X
+       ...
+       pipe7.f0000x
       It means that 8 ionodes have been used and consequently P065 = 8.
       /!\ The number of CPUS for running the case should also be a multiple
       of this parameter 65 (i.e. lp = k*8 in the SIZE file).
+- Depening on the restart method chosen:
+    * Using rs8 files
+      + pipe.upar : file required to restart the case from a previous solution.
+        This file contains 2 parameters :
+        = CHKPTSTEP that defines the interval for writing restart files. 
+          /!\ Writing restart files requires 4 time steps. Therefore, if
+          CHKPTSTEP=50, then NSTEPS should be at least equal to 53 in the rea file.
+          If you don't want to write restart file, just set CHKPTSTEP > NSTEPS.
+        = IFCHKPTRST which is a binary variable. If set to true (T) then the
+          initial solution will use restart files. Otherwise (F), it uses the IC  
+          from usr file.
+      + pipe.restart file that contains only a 0 or a 1:
+        = if 0 then restart will use the files rs8xxx.f00001 ... rs8xxx.f00004
+        = if 1 then restart will use the files rs8xxx.f00005 ... rs8xxx.f00008
+    * Using PRESOLVE/RESTART
+      + pipe.upar : make sure that IFCHKPTRST=F and that CHKPTSTEP > NSTEPS if 
+        you don't want to write out data.
+      + pipe.rea : just use the well-known restart option:
+         X  PRESOLVE/RESTART OPTIONS  ***** 
+         pipe0.f00001
+         ...
+         pipeX.f00001
 
-- pipe.upar : file required to restart the case from a previous solution.
-    This file contains 2 parameters :
-    * CHKPTSTEP that defines the interval for writing restart files. 
-      /!\ Writing restart files requires 4 time steps. Therefore, if
-      CHKPTSTEP=50, then NSTEPS should be at least equal to 53 in the rea file.
-      If you don't want to write restart file, just set CHKPTSTEP > NSTEPS.
-    * IFCHKPTRST which is a binary variable. If set to true (T) then the
-      initial solution will use restart files. Otherwise (F), it uses the IC  
-      from usr file.
-
-- pipe.restart file that contains only a 0 or a 1:
-    * if 0 then restart will use the files rs8xxx.f00001 ... rs8xxx.f00004
-    * if 1 then restart will use the files rs8xxx.f00005 ... rs8xxx.f00008
-
-Using AMG - If one wants to use AMG as a coarse grid solver, the required data
+About AMG: if one wants to use AMG as a coarse grid solver, the required data
 files can be found in the folders amg_old or amg_new for each case. amg_old 
 contains data obtained using the initial version of the AMG Matlab setup (the
 one in the repo as of today). amg_new contains data obtained using the new 
 version of the AMG Matlab setup written by J. Lottes (and presented in his 
-thesis). Difference in performances between both versions is not well-known.
+thesis).
