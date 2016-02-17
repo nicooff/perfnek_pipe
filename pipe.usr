@@ -47,6 +47,11 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
 !     tihis must be performed before calling sfd_init and sfd_rst_save
       call checkpoint  ! save/load files for full-restart
+      iftimers=.false.
+      if(istep>20) then 
+        iftimers=.true.
+        ifsync=.true.
+      endif
 
 c     Print timing for the coarse grid solver 
 c     (min, max and avg over all processes)
