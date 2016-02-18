@@ -61,16 +61,19 @@
       subroutine uprm_in(iunit)
       implicit none
 
+      include 'SIZE_DEF'
+      include 'SIZE'
+
 !     argument list
       integer iunit
 !-----------------------------------------------------------------------
 !     place to call module _param_in routines
 
-      rewind(iunit)
 !     user parameters
+!      rewind(iunit)
 !      call user_param_in(iunit)
 
-      rewind(iunit)
+      if (NID.eq.0) rewind(iunit)
 !     restart
       call chkpt_param_in(iunit)
 
