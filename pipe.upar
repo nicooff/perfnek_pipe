@@ -1,4 +1,4 @@
 &CHKPOINT
- CHKPTSTEP=         50,
+ CHKPTSTEP=         500,
  IFCHKPTRST=T,
  /

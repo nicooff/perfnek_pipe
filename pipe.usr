@@ -48,27 +48,9 @@ c-----------------------------------------------------------------------
 !     tihis must be performed before calling sfd_init and sfd_rst_save
       call checkpoint  ! save/load files for full-restart
       iftimers=.false.
-      if(istep>30) then 
+      if(istep.ge.30) then 
         iftimers=.true.
         ifsync=.true.
-      endif
-
-c     Print timing for the coarse grid solver 
-c     (min, max and avg over all processes)
-      tcrsl_min = tcrsl
-      call gop(tcrsl_min,w_min,'m  ',1)
-
-      tcrsl_max = tcrsl
-      call gop(tcrsl_max,w_max,'M  ',1)
-
-      tcrsl_avg = tcrsl
-      call gop(tcrsl_avg,w_avg,'+  ',1)
-      tcrsl_avg = tcrsl_avg/np
-
-      if (nid .eq. 0) then
-         write(6,*) istep, ' tcrsl_min: ', tcrsl_min
-         write(6,*) istep, ' tcrsl_max: ', tcrsl_max
-         write(6,*) istep, ' tcrsl_avg: ', tcrsl_avg
       endif
 
       return
