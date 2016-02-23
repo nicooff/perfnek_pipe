@@ -41,11 +41,8 @@ c-----------------------------------------------------------------------
       include 'PARALLEL' ! np
       include 'CTIMER'  ! tcrsl
 
-      real tcrsl_min, tcrsl_max, tcrsl_avg, w_min, 
-     $ w_max, w_avg
-
 c-----------------------------------------------------------------------
-!     tihis must be performed before calling sfd_init and sfd_rst_save
+!     this must be performed before calling sfd_init and sfd_rst_save
       call checkpoint  ! save/load files for full-restart
       iftimers=.false.
       if(istep.ge.30) then 
