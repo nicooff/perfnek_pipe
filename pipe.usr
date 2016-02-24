@@ -45,7 +45,7 @@ c-----------------------------------------------------------------------
 !     this must be performed before calling sfd_init and sfd_rst_save
       call checkpoint  ! save/load files for full-restart
       iftimers=.false.
-      if(istep.ge.30) then 
+      if(istep>30) then 
         iftimers=.true.
         ifsync=.true.
       endif
