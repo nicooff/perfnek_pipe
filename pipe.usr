@@ -39,13 +39,13 @@ c-----------------------------------------------------------------------
       include 'SIZE'
       include 'TSTEP'   ! istep
       include 'PARALLEL' ! np
-      include 'CTIMER'  ! tcrsl
+      include 'CTIMER'  ! iftimers
 
 c-----------------------------------------------------------------------
 !     this must be performed before calling sfd_init and sfd_rst_save
       call checkpoint  ! save/load files for full-restart
       iftimers=.false.
-      if(istep>30) then 
+      if(istep.ge.30) then 
         iftimers=.true.
         ifsync=.true.
       endif
